@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t retrofire/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true retrofire/react-test npm test
+
+after_success:
+  - echo "$DP" | docker login -u "$DI" --password-stdin
+  - docker build -t retrofire/multi-client ./client
+  - docker build -t retrofire/multi-nginx ./nginx
+  - docker build -t retrofire/multi-server ./server
+  - docker build -t retrofire/multi-worker ./worker
+  - docker push retrofire/multi-client
+  - docker push retrofire/multi-nginx
+  - docker push retrofire/multi-server
+  - docker push retrofire/multi-worker
